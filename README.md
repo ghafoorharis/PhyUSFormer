@@ -1,2 +1,19 @@
-# PhysUSFormer
-A novel framework that leverages physics guided simulation pipeline to generate synthetic datasets that are used to pretrain our foundation models
+# Official PyTorch Implementation of PhysUSNet: Physics-Guided Deep Learning for Ultrasound Image Segmentation
+
+## Abstract:
+-
+## Performance
+
+### Training Performance:
+-
+### Testing Performance:
+
+-
+## Installation
+
+Conda environment (recommended):
+
+```shell
+conda env create -f environment.yml
+
+
