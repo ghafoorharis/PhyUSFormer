@@ -12,8 +12,6 @@ from helper.utils import (
     calculate_psnr_ssim,
 )
 
-
-# %% Trainer Class
 class Trainer:
     def __init__(
         self,
