@@ -5,7 +5,7 @@ import random
 import cv2
 import torch
 from torch.utils.data import Dataset
-
+from PIL import Image
 
 class BUSIDataset(Dataset):
     def __init__(self, image_paths, mask_paths,labels, transform=None, image_processor=None):
