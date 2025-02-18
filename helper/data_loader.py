@@ -7,6 +7,112 @@ import torch
 from torch.utils.data import Dataset
 
 
+class BUSIDataset(Dataset):
+    def __init__(self, image_paths, mask_paths,labels, transform=None, image_processor=None):
+        self.image_paths = image_paths
+        self.mask_paths = mask_paths
+        self.labels = labels
+        self.transform = transform
+        self.image_processor = image_processor
+        self.id2label = {0: "background", 1: "object"}
+
+    def __len__(self):
+        return len(self.image_paths)
+
+    def __getitem__(self, idx):
+        # Load image
+        x_img_path = self.image_paths[idx] # Image path
+        x_mask_path = self.mask_paths[idx][0] # Mask path
+        label = self.labels[idx]# Label
+        image = Image.open(x_img_path).convert("RGB")  # Ensure 3-channel RGB
+        image = np.array(image)
+
+        mask = np.array(Image.open(x_mask_path),dtype=np.uint8)
+        # print(f"Mask after loading (unique values): {np.unique(mask)}")
+        # Resize
+        image = cv2.resize(image, (256, 256), interpolation=cv2.INTER_AREA)
+        # Ensure mask is uint8 before resizing
+        mask = np.array(mask, dtype=np.uint8)
+        mask = cv2.resize(mask, (256, 256), interpolation=cv2.INTER_NEAREST)
+
+        # print(f"Mask after resizing (unique values): {np.unique(mask)}")
+
+        # Normalize image
+        image = image / image.max()
+        # Normalize mask safely
+        if mask.max() > 0:
+            mask = mask / mask.max()
+
+
+        # Ensure mask remains binary (0 or 1)
+        mask = torch.tensor(mask, dtype=torch.float32)
+        # print(f"Mask after transformation (unique values): {np.unique(mask.numpy())}")
+        # Process with Segformer Image Processor
+        encoded_inputs = self.image_processor(image, mask, return_tensors="pt")
+        for k, v in encoded_inputs.items():
+            encoded_inputs[k].squeeze_()
+
+        # print(f"Encoded Mask unique values: {np.unique(encoded_inputs['labels'].numpy())}")
+        # Add metadata
+        metadata = {
+            "image_path": x_img_path,
+            "mask_path": x_mask_path,
+            "label": label,
+        }
+        encoded_inputs["metadata"] = metadata
+        return encoded_inputs
+    
+class UDIATDataset(Dataset):
+    def __init__(self, data, transform=None, image_processor=None):
+        self.data = data
+        self.transform = transform
+        self.image_processor = image_processor
+        self.id2label = {0: "background", 1: "object"}
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        # Load image
+        image_path,mask_path,label = self.data[idx]
+        image = Image.open(image_path).convert("RGB")  # Ensure 3-channel RGB
+        image = np.array(image)
+        mask = np.array(Image.open(mask_path), dtype=np.uint8)
+        # print(f"Mask after loading (unique values): {np.unique(mask)}")
+        # Resize
+        image = cv2.resize(image, (256, 256), interpolation=cv2.INTER_AREA)
+        # Ensure mask is uint8 before resizing
+        mask = np.array(mask, dtype=np.uint8)
+        mask = cv2.resize(mask, (256, 256), interpolation=cv2.INTER_NEAREST)
+
+        # print(f"Mask after resizing (unique values): {np.unique(mask)}")
+
+        # Normalize image
+        image = image / image.max()
+        # Normalize mask safely
+        if mask.max() > 0:
+            mask = mask / mask.max()
+
+        # Ensure mask remains binary (0 or 1)
+        mask = torch.tensor(mask, dtype=torch.float32)
+        # print(f"Mask after transformation (unique values): {np.unique(mask.numpy())}")
+        # Process with Segformer Image Processor
+        encoded_inputs = self.image_processor(image, mask, return_tensors="pt")
+        for k, v in encoded_inputs.items():
+            encoded_inputs[k].squeeze_()
+
+        # print(f"Encoded Mask unique values: {np.unique(encoded_inputs['labels'].numpy())}")
+
+        
+        metadata = {
+            "image_path": image_path,
+            "mask_path": mask_path,
+            "label": label,
+        }
+
+        encoded_inputs["metadata"] = metadata
+        return encoded_inputs
+    
 class UltrasoundDataset(Dataset):
     def __init__(self, scans, labels, transform=None):
         self.scans = scans
