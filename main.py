@@ -37,8 +37,8 @@ def main(FOLD_ID,LOG_DIR,SAVE_DIR):
     # 2. Load Data
     print("Loading data...")
     # fold_id = FOLD_ID # FOLD ID : 0,1,2,3,4
-    DATA_DIR_TEST = "/home/user/haris/data/combine_datasets/data_npz/train_test_data"
-    DATA_DIR_TRAIN_VAL = f"/home/user/haris/data/combine_datasets/data_npz/train_val_data_fold_{str(FOLD_ID)}"
+    DATA_DIR_TEST = "data/combine_datasets/data_npz/train_test_data"
+    DATA_DIR_TRAIN_VAL = f"data/combine_datasets/data_npz/train_val_data_fold_{str(FOLD_ID)}"
     train_test_data = read_data_numpy(DATA_DIR_TEST)
     X_test_noisy = train_test_data['X_test']
     X_test = train_test_data['y_test']
