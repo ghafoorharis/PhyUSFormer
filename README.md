@@ -1,4 +1,4 @@
-# Official PyTorch Implementation of PhysUSNet: Physics-Guided Deep Learning for Ultrasound Image Segmentation
+# Official PyTorch Implementation of PhyUSFormer: Physics-Guided Deep Learning for Ultrasound Image Segmentation
 
 ## Abstract:
 -
