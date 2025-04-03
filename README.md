@@ -103,18 +103,9 @@ Please download the pre-trained weights from the following drive link and place 
 
 [Download Pre-trained Models](https://drive.google.com/drive/folders/1D-YaHevYGR69wwR0UMNLFRCibDtuWT7H?usp=sharing)
 
-## Citation
+## Conference Proceedings
 
-If you find this work useful for your research, please cite our paper:
-
-```bibtex
-@article{PhyUSFormer2023,
-  title={PhyUSFormer: Physics-Guided Ultrasound Segmentation Transformer},
-  author={Author1 and Author2 and Author3},
-  journal={Journal Name},
-  year={2023}
-}
-```
+This work has been accepted in the proceedings of the International Conference on Medical Image Computing and Computer Assisted Intervention (MICCAI 2023). The full paper will be available in the conference proceedings.
 
 ## License
 
