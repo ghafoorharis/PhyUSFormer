@@ -6,16 +6,12 @@ import albumentations as A
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, Dataset as BaseDataset
 from torch.optim import lr_scheduler
-import segmentation_models_pytorch as smp
 import pytorch_lightning as pl
 
 # Internal Imports
-from helper.trainer import Trainer
-from config import EPOCHS, BATCH_SIZE, LEARNING_RATE, DATA_DIR, LOG_DIR, SAVE_DIR, ALPHA
+from config import EPOCHS, BATCH_SIZE, DATA_DIR, LOG_DIR, SAVE_DIR
 from helper.data_loader import read_data_numpy
-from helper.models import UNet
-from helper.loss import DenoisingLoss  # Existing loss (if needed)
-from helper.utils import log_hyperparameters, log_inference, calculate_metrics, calculate_psnr_ssim
+from helper.utils import calculate_metrics, calculate_psnr_ssim
 from transformers import SegformerImageProcessor
 import evaluate
 
@@ -25,6 +21,7 @@ from lightning.pytorch.loggers import TensorBoardLogger
 from transformers import SegformerForSemanticSegmentation
 import pandas as pd
 from PIL import Image
+
 # =============================================================================
 # Hybrid Loss: Combines Dice loss and Binary Cross-Entropy (BCE) loss.
 # =============================================================================
@@ -51,7 +48,7 @@ class HybridLoss(torch.nn.Module):
         return self.alpha * dice_loss + (1 - self.alpha) * bce
 
 # =============================================================================
-# Dataset Classes (synthetic_data and new_dataset remain unchanged)
+# Dataset Classes
 # =============================================================================
 class synthetic_data(BaseDataset):
     def __init__(self, scans, labels, image_processor, transform=None):
@@ -91,32 +88,6 @@ class synthetic_data(BaseDataset):
         # Ensure pixel_values have 3 channels.
         if encoded_inputs["pixel_values"].shape[1] == 1:
             encoded_inputs["pixel_values"] = encoded_inputs["pixel_values"].repeat(1, 3, 1, 1)
-        return encoded_inputs
-
-class new_dataset(BaseDataset):
-    def __init__(self, scans, labels, image_processor, transform=None):
-        self.scans = scans
-        self.labels = labels
-        self.transform = transform
-        self.image_processor = image_processor
-        self.id2label = {0: "background", 1: "object"}
-
-    def __len__(self):
-        return len(self.scans)
-
-    def __getitem__(self, idx):
-        noisy_image = self.scans[idx]
-        clean_image = self.labels[idx]
-        if self.transform:
-            noisy_image = self.transform(noisy_image)
-            clean_image = self.transform(clean_image)
-        else:
-            noisy_image = torch.from_numpy(noisy_image).float()
-            clean_image = torch.from_numpy(clean_image).float()
-        encoded_inputs = self.image_processor(noisy_image, clean_image, return_tensors="pt")
-        for k, v in encoded_inputs.items():
-            encoded_inputs[k].squeeze_()
-        encoded_inputs["pixel_values"] = encoded_inputs["pixel_values"].unsqueeze(0).repeat(3, 1, 1)
         return encoded_inputs
 
 # =============================================================================
@@ -248,40 +219,6 @@ class SegformerFinetuner(pl.LightningModule):
 
     def test_dataloader(self):
         return self.test_dl
-
-# =============================================================================
-# BUSI Dataset Loader (Updated paths and comments)
-# =============================================================================
-class BUSIDataset(BaseDataset):
-    def __init__(self, image_paths, mask_paths, transform=None, image_processor=None):
-        self.image_paths = image_paths
-        self.mask_paths = mask_paths
-        self.transform = transform
-        self.image_processor = image_processor
-        self.id2label = {0: "background", 1: "object"}
-
-    def __len__(self):
-        return len(self.image_paths)
-
-    def __getitem__(self, idx):
-        # Load image in RGB format
-        image = Image.open(self.image_paths[idx]).convert("RGB")
-        image = np.array(image)
-        # Load mask as uint8
-        mask = np.array(Image.open(self.mask_paths[idx][0]), dtype=np.uint8)
-        # Resize image and mask to 256x256
-        image = cv2.resize(image, (256, 256), interpolation=cv2.INTER_AREA)
-        mask = cv2.resize(mask, (256, 256), interpolation=cv2.INTER_NEAREST)
-        # Normalize image and mask
-        image = image / image.max()
-        if mask.max() > 0:
-            mask = mask / mask.max()
-        mask = torch.tensor(mask, dtype=torch.float32)
-        # Process with the Segformer image processor
-        encoded_inputs = self.image_processor(image, mask, return_tensors="pt")
-        for k, v in encoded_inputs.items():
-            encoded_inputs[k].squeeze_()
-        return encoded_inputs
 
 # =============================================================================
 # Main Function: Data Loading, Model Training and Evaluation

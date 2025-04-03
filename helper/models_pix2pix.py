@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 class Generator(nn.Module):
     def __init__(self):
@@ -79,59 +80,9 @@ class Discriminator(nn.Module):
         out = self.layer5(self.layer4(self.layer3(self.layer2(self.layer1(x)))))
         return self.layer6(out)
 
-### Pavel's Generator -> Link: https://github.com/sigtot/pix2pix-model/blob/master/unet [Citation: ?]
-import torch
-from torch import nn
-import torch.nn.functional as F
-
-
-class EncodeModule(nn.Module):
-    def __init__(self, in_c, out_c, batchnorm=True):
-        super(EncodeModule, self).__init__()
-        self.layers = nn.Sequential()
-        self.layers.add_module('conv', nn.Conv2d(in_c, out_c, 4, stride=2, padding=1))
-        if batchnorm:
-            self.layers.add_module('bn', nn.BatchNorm2d(out_c))
-        self.layers.add_module('relu', nn.LeakyReLU(negative_slope=0.2, inplace=True))
-
-    def forward(self, x):
-        out = self.layers(x)
-        #print(out.size())
-        return out
-
-
-class DecodeModule(nn.Module):
-    def __init__(self, in_c, out_c, batchnorm=True, dropout=False):
-        super(DecodeModule, self).__init__()
-        self.up = nn.ConvTranspose2d(in_c, out_c, 4, stride=2)
-        self.layers = nn.Sequential()
-        if batchnorm:
-            self.layers.add_module('bn', nn.BatchNorm2d(out_c*2))
-        if dropout:
-            self.layers.add_module('do', nn.Dropout2d(p=0.5, inplace=True))
-        self.layers.add_module('relu', nn.ReLU(inplace=True))
-
-    def forward(self, x1, x2):
-        x1 = self.up(x1)
-        dw = x2.size(2) - x1.size(2)
-        dh = x2.size(3) - x1.size(3)
-        x1 = F.pad(x1, [dw // 2, dw - dw // 2, dh // 2, dh - dh // 2])
-        #print("x1", x1.size())
-        #print("x2", x2.size())
-        x = torch.cat([x1, x2], dim=1)
-        out = self.layers(x)
-        #print(out.size())
-        return out
-
-from torch import nn
-
-
 class ArtNet(nn.Module):
-    def __init__(self,n_in = 2, n_out=64):
+    def __init__(self, n_in=2, n_out=64):
         super(ArtNet, self).__init__()
-
-        # n_in = 2        # number of input channels
-        # n_out = 64      # number of output channels (i.e., number of filter in the last conv layer)
 
         self.kernel_size = 4
         self.padding = 1
@@ -155,6 +106,8 @@ class ArtNet(nn.Module):
             nn.BatchNorm2d(n_output_channels),
             nn.LeakyReLU(0.2, True)
         )
+
+### Pavel's Generator -> Link: https://github.com/sigtot/pix2pix-model/blob/master/unet [Citation: ?]
 import torch
 from torch import nn
 import torch.nn.functional as F
