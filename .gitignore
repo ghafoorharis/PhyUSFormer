@@ -56,3 +56,7 @@ dkms.conf
 *.json
 *.ckpt
 *.safetensors
+*.csv
+*.pyc
+*.pyc
+/helper/__pycache__

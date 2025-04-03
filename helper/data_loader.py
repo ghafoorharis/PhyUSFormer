@@ -22,7 +22,12 @@ class BUSIDataset(Dataset):
     def __getitem__(self, idx):
         # Load image
         x_img_path = self.image_paths[idx] # Image path
-        x_mask_path = self.mask_paths[idx][0] # Mask path
+        # try:
+        #     x_mask_path = self.mask_paths[idx][0] # Mask path
+        #     # x_mask_path = self.mask_paths[idx][1] # Mask path
+        # except:
+        #     x_mask_path = self.mask_paths[idx]
+        x_mask_path = self.mask_paths[idx] # Mask path
         label = self.labels[idx]# Label
         image = Image.open(x_img_path).convert("RGB")  # Ensure 3-channel RGB
         image = np.array(image)

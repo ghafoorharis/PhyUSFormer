@@ -35,6 +35,68 @@ segformer_inference_config = {
             },
             "BATCH_SIZE": 16,
         },
+        "pretrained_on_open_source_datasets_mit_b5": {
+            "path": "nvidia/mit-b5",
+            "threshold": 0.5,
+            "post_processing": {
+                "REMOVE_SMALL_LESIONS": True,
+                "activation_fn": "sigmoid",  # "softmax",
+                "threshold": 0.5,
+            },
+            "BATCH_SIZE": 16,
+        },
+        "pretrained_on_open_source_datasets_ade_b5_512": {
+            "path": "nvidia/segformer-b0-finetuned-ade-512-512",
+            "threshold": 0.5,
+            "post_processing": {
+                "REMOVE_SMALL_LESIONS": True,
+                "activation_fn": "sigmoid",  # "softmax",
+                "threshold": 0.5,
+            },
+            "BATCH_SIZE": 16,
+        },
+        "pretrained_on_open_source_datasets_cityscapes_b5_1024": {
+            "path": "nvidia/segformer-b5-finetuned-cityscapes-1024-1024",
+            "threshold": 0.5,
+            "post_processing": {
+                "REMOVE_SMALL_LESIONS": True,
+                "activation_fn": "sigmoid",  # "softmax",
+                "threshold": 0.5,
+            },
+            "BATCH_SIZE": 16,
+        },
+        "pretrained_on_open_source_datasets_bresatcancer_b0": {
+            "path": "PushkarA07/segformer-b0-finetuned-breastcancer-oct-1",
+            "threshold": 0.5,
+            "post_processing": {
+                "REMOVE_SMALL_LESIONS": True,
+                "activation_fn": "sigmoid",  # "softmax",
+                "threshold": 0.5,
+            },
+            "BATCH_SIZE": 16,
+        },
+        "pretrained_on_phys_guided_synth_III": {
+            # "path": "weights/segformer-mit-b5_dataset_four_Fold_0_v1",
+            "path": "weights/segformer-mit-b5_combined_datasets_Fold_4",
+            "threshold": 0.5,
+            "post_processing": {
+                "REMOVE_SMALL_LESIONS": False,
+                "activation_fn": "sigmoid",  # "softmax",
+                "threshold": 0.4,
+            },
+            "BATCH_SIZE": 16,
+        },
+        "pretrained_on_phys_guided_synth_I_II": {
+            # "path": "weights/segformer-mit-b5_dataset_combined_one_two_Fold_4_v3",
+            "path": "weights/segformer-mit-b5_Cubic_Bezier_Fold_4",
+            "threshold": 0.5,
+            "post_processing": {
+                "REMOVE_SMALL_LESIONS": False,
+                "activation_fn": "sigmoid",  # "softmax",
+                "threshold": 0.4,
+            },
+            "BATCH_SIZE": 16,
+        },
     },
     "udiat": {
         "data_path": "udiat_5folds.npz",
@@ -57,6 +119,68 @@ segformer_inference_config = {
                 "activation_fn": "sigmoid",  # "softmax",
                 "threshold": 0.4,
             },
+        },
+        "pretrained_on_open_source_datasets_mit_b5": {
+            "path": "nvidia/mit-b5",
+            "threshold": 0.5,
+            "post_processing": {
+                "REMOVE_SMALL_LESIONS": True,
+                "activation_fn": "sigmoid",  # "softmax",
+                "threshold": 0.5,
+            },
+            "BATCH_SIZE": 4,
+        },
+        "pretrained_on_open_source_datasets_ade_b5_512": {
+            "path": "nvidia/segformer-b0-finetuned-ade-512-512",
+            "threshold": 0.5,
+            "post_processing": {
+                "REMOVE_SMALL_LESIONS": True,
+                "activation_fn": "sigmoid",  # "softmax",
+                "threshold": 0.5,
+            },
+            "BATCH_SIZE": 4,
+        },
+        "pretrained_on_open_source_datasets_cityscapes_b5_1024": {
+            "path": "nvidia/segformer-b5-finetuned-cityscapes-1024-1024",
+            "threshold": 0.5,
+            "post_processing": {
+                "REMOVE_SMALL_LESIONS": True,
+                "activation_fn": "sigmoid",  # "softmax",
+                "threshold": 0.5,
+            },
+            "BATCH_SIZE": 4,
+        },
+        "pretrained_on_open_source_datasets_bresatcancer_b0": {
+            "path": "PushkarA07/segformer-b0-finetuned-breastcancer-oct-1",
+            "threshold": 0.5,
+            "post_processing": {
+                "REMOVE_SMALL_LESIONS": True,
+                "activation_fn": "sigmoid",  # "softmax",
+                "threshold": 0.5,
+            },
+            "BATCH_SIZE": 4,
+        },
+        "pretrained_on_phys_guided_synth_III": {
+            # "path": "weights/segformer-mit-b5_dataset_four_Fold_0_v1",
+            "path": "weights/segformer-mit-b5_combined_datasets_Fold_4",
+            "threshold": 0.5,
+            "post_processing": {
+                "REMOVE_SMALL_LESIONS": False,
+                "activation_fn": "sigmoid",  # "softmax",
+                "threshold": 0.4,
+            },
+            "BATCH_SIZE": 4,
+        },
+        "pretrained_on_phys_guided_synth_I_II": {
+            # "path": "weights/segformer-mit-b5_dataset_combined_one_two_Fold_4_v3",
+            "path": "weights/segformer-mit-b5_Cubic_Bezier_Fold_4",
+            "threshold": 0.5,
+            "post_processing": {
+                "REMOVE_SMALL_LESIONS": False,
+                "activation_fn": "sigmoid",  # "softmax",
+                "threshold": 0.4,
+            },
+            "BATCH_SIZE": 4,
         },
     },
 }
