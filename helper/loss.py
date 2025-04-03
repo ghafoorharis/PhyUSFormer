@@ -15,17 +15,59 @@ class BinaryDiceLoss(nn.Module):
         return 1 - dice.mean()
 
 class DenoisingLoss(nn.Module):
-    def __init__(self, alpha=0.5):
+    """
+    DenoisingLoss: Combines Dice loss and MSE loss to evaluate denoising performance.
+    
+    This loss function balances segmentation performance (Dice loss) with pixel-wise 
+    reconstruction accuracy (MSE loss) using a weighting parameter alpha.
+    
+    Args:
+        alpha (float): Weight factor to balance Dice loss and MSE loss. 
+                      Higher alpha gives more weight to Dice loss.
+    """
+    def __init__(self, alpha=0.8):
         super(DenoisingLoss, self).__init__()
         self.alpha = alpha
-        # Define loss functions
-        # Define RMSE loss
-        self.bce_loss = nn.BCELoss()
         self.mse_loss = nn.MSELoss()
-        self.dice_loss = BinaryDiceLoss()
-
-    def forward(self, outputs, targets):
-        bce = self.bce_loss(outputs, targets)
-        mse = self.mse_loss(outputs, targets)
-        dice = self.dice_loss(outputs, targets)
-        return self.alpha * dice + (1 - self.alpha) * mse
+        
+    def dice_loss(self, preds, targets):
+        """
+        Calculate Dice loss between predictions and targets.
+        
+        Args:
+            preds (torch.Tensor): Predicted segmentation masks
+            targets (torch.Tensor): Ground truth segmentation masks
+            
+        Returns:
+            torch.Tensor: Dice loss value
+        """
+        # Add small epsilon to avoid division by zero
+        smooth = 1e-5
+        
+        # Calculate intersection and union
+        intersection = (preds * targets).sum(dim=(1, 2, 3))
+        union = preds.sum(dim=(1, 2, 3)) + targets.sum(dim=(1, 2, 3))
+        
+        # Calculate Dice coefficient and convert to loss
+        dice = (2.0 * intersection + smooth) / (union + smooth)
+        dice_loss = 1.0 - dice.mean()
+        
+        return dice_loss
+    
+    def forward(self, preds, targets):
+        """
+        Calculate combined loss of Dice loss and MSE loss.
+        
+        Args:
+            preds (torch.Tensor): Predicted output from the model
+            targets (torch.Tensor): Ground truth targets
+            
+        Returns:
+            torch.Tensor: Weighted combination of Dice loss and MSE loss
+        """
+        # Calculate individual loss components
+        d_loss = self.dice_loss(preds, targets)
+        mse_loss = self.mse_loss(preds, targets)
+        
+        # Return weighted combination
+        return self.alpha * d_loss + (1 - self.alpha) * mse_loss

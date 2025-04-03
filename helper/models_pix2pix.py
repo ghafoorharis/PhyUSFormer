@@ -3,6 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class Generator(nn.Module):
+    """
+    U-Net Generator architecture with skip connections for image-to-image translation tasks.
+    """
     def __init__(self):
         super(Generator, self).__init__()
         # Encoder
@@ -49,7 +52,7 @@ class Generator(nn.Module):
         x4 = self.enc4(x3)
         x5 = self.enc5(x4)
 
-        # Decoding
+        # Decoding with skip connections
         out = self.dec1(x5)
         out = self.dec2(torch.cat((out, x4), dim=1))
         out = self.dec3(torch.cat((out, x3), dim=1))
@@ -58,6 +61,9 @@ class Generator(nn.Module):
         return out
 
 class Discriminator(nn.Module):
+    """
+    Discriminator architecture for adversarial training in image-to-image translation tasks.
+    """
     def __init__(self):
         super(Discriminator, self).__init__()
         self.layer1 = self.conv2relu(2, 16, kernel_size=5, stride=1)
@@ -68,6 +74,9 @@ class Discriminator(nn.Module):
         self.layer6 = nn.Conv2d(256, 1, kernel_size=1)
 
     def conv2relu(self, in_c, out_c, kernel_size=3, stride=1):
+        """
+        Convolution -> BatchNorm -> LeakyReLU
+        """
         layers = [
             nn.Conv2d(in_c, out_c, kernel_size, stride=stride, padding=(kernel_size - 1) // 2),
             nn.BatchNorm2d(out_c),
@@ -81,9 +90,11 @@ class Discriminator(nn.Module):
         return self.layer6(out)
 
 class ArtNet(nn.Module):
+    """
+    ArtNet architecture for conditional adversarial tasks.
+    """
     def __init__(self, n_in=2, n_out=64):
         super(ArtNet, self).__init__()
-
         self.kernel_size = 4
         self.padding = 1
 
@@ -101,19 +112,19 @@ class ArtNet(nn.Module):
         return self.model(input)
 
     def _get_layer(self, n_input_channels, n_output_channels, stride):
+        """
+        Helper method to create a convolutional block with batch normalization and LeakyReLU.
+        """
         return nn.Sequential(
             nn.Conv2d(n_input_channels, n_output_channels, kernel_size=self.kernel_size, stride=stride, padding=self.padding),
             nn.BatchNorm2d(n_output_channels),
             nn.LeakyReLU(0.2, True)
         )
 
-### Pavel's Generator -> Link: https://github.com/sigtot/pix2pix-model/blob/master/unet [Citation: ?]
-import torch
-from torch import nn
-import torch.nn.functional as F
-
-
 class EncodeModule(nn.Module):
+    """
+    Encoder module for Pavel's Generator with optional batch normalization.
+    """
     def __init__(self, in_c, out_c, batchnorm=True):
         super(EncodeModule, self).__init__()
         self.layers = nn.Sequential()
@@ -123,12 +134,12 @@ class EncodeModule(nn.Module):
         self.layers.add_module('relu', nn.LeakyReLU(negative_slope=0.2, inplace=True))
 
     def forward(self, x):
-        out = self.layers(x)
-        #print(out.size())
-        return out
-
+        return self.layers(x)
 
 class DecodeModule(nn.Module):
+    """
+    Decoder module for Pavel's Generator with optional batch normalization and dropout.
+    """
     def __init__(self, in_c, out_c, batchnorm=True, dropout=False):
         super(DecodeModule, self).__init__()
         self.up = nn.ConvTranspose2d(in_c, out_c, 4, stride=2)
@@ -144,18 +155,17 @@ class DecodeModule(nn.Module):
         dw = x2.size(2) - x1.size(2)
         dh = x2.size(3) - x1.size(3)
         x1 = F.pad(x1, [dw // 2, dw - dw // 2, dh // 2, dh - dh // 2])
-        #print("x1", x1.size())
-        #print("x2", x2.size())
         x = torch.cat([x1, x2], dim=1)
-        out = self.layers(x)
-        #print(out.size())
-        return out
-
+        return self.layers(x)
 
 class PavelNet(nn.Module):
+    """
+    PavelNet: A deeper U-Net architecture with 8 encoder and decoder layers.
+    Originally from: https://github.com/sigtot/pix2pix-model/blob/master/unet
+    """
     def __init__(self, in_c=1, out_c=1):
         super(PavelNet, self).__init__()
-        # C64-C128-C256-C512-C512-C512-C512-C512
+        # Encoder: C64-C128-C256-C512-C512-C512-C512-C512
         self.e1 = EncodeModule(in_c, 64, batchnorm=False)  # 256 -> 128
         self.e2 = EncodeModule(64, 128)  # 128 -> 64
         self.e3 = EncodeModule(128, 256)  # 64 -> 32
@@ -165,7 +175,7 @@ class PavelNet(nn.Module):
         self.e7 = EncodeModule(512, 512)  # 4 -> 2
         self.e8 = EncodeModule(512, 512, batchnorm=False)  # 2 -> 1
 
-        # CD512-CD1024-CD1024-C1024-C1024-C512-C256-C128
+        # Decoder: CD512-CD1024-CD1024-C1024-C1024-C512-C256-C128
         self.d1 = DecodeModule(512, 512, dropout=True)
         self.d2 = DecodeModule(1024, 512, dropout=True)
         self.d3 = DecodeModule(1024, 512, dropout=True)
@@ -179,6 +189,7 @@ class PavelNet(nn.Module):
         )
 
     def forward(self, x):
+        # Encoder path
         x1 = self.e1(x)
         x2 = self.e2(x1)
         x3 = self.e3(x2)
@@ -188,6 +199,7 @@ class PavelNet(nn.Module):
         x7 = self.e7(x6)
         x8 = self.e8(x7)
 
+        # Decoder path with skip connections
         y = self.d1(x8, x7)
         y = self.d2(y, x6)
         y = self.d3(y, x5)
@@ -198,11 +210,11 @@ class PavelNet(nn.Module):
         return self.out(y)
     
 if __name__=="__main__":
+    # Simple test to verify the models
     G = PavelNet()
     D = ArtNet()
     print(G)
     print(D)
     x = torch.randn(32, 1, 256, 256)
-    # cat_x
-    print(G(x).shape)
-    print(D(x,x).shape)
+    print(f"Generator output shape: {G(x).shape}")
+    print(f"Discriminator output shape: {D(x,x).shape}")
