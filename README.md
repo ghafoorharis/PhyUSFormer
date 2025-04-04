@@ -104,8 +104,11 @@ Please download the pre-trained weights from the following drive link and place 
 [Download Pre-trained Models](https://drive.google.com/drive/folders/1D-YaHevYGR69wwR0UMNLFRCibDtuWT7H?usp=sharing)
 
 ## Conference Proceedings
+This work is currently in the process of submission.
 
+<!---
 This work has been accepted in the proceedings of the International Conference on Medical Image Computing and Computer Assisted Intervention (MICCAI 2023). The full paper will be available in the conference proceedings.
+-->
 
 ## License
 
